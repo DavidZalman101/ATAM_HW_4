@@ -92,7 +92,7 @@ int get_str_length( FILE* fd, long start_adr);
 char* get_section_name( FILE* fd, Elf64_Shdr* section_header, Elf64_Shdr* shstrtab_section_headerd );
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 bool find_sym_str_tabs_section_headers
-( FILE* fd, 						 			Elf64_Half Number_of_section_header_enteries, 
+( FILE* fd, 						 			Elf64_Half Number_of_section_header_enteries,
   Elf64_Shdr* symtab_section_header, 			Elf64_Shdr* strtab_section_header,
   Elf64_Shdr* shstrtab_section_header,			Elf64_Ehdr* file_header_ptr, Elf64_Shdr* dynstr_section_header,
   Elf64_Shdr* rela_plt_section_header,			Elf64_Shdr* gotplt_section_header
@@ -108,7 +108,7 @@ unsigned long find_symbol(char* symbol_name, char* exe_file_name, int* error_val
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 bool find_dynsym_section(FILE* fd, Elf64_Ehdr* file_header_ptr, Elf64_Shdr* shstrtab_section_header, Elf64_Shdr* dynsym_section_header);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-bool find_the_symbol_index(FILE* fd, Elf64_Shdr* dynsym_section_header, Elf64_Shdr* strtab_section_header, 
+bool find_the_symbol_index(FILE* fd, Elf64_Shdr* dynsym_section_header, Elf64_Shdr* strtab_section_header,
 						   char* symbol_name, int* symbol_index);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 unsigned long find_sym_got_address(FILE* fd, Elf64_Ehdr* file_header_ptr, Elf64_Shdr* shstrtab_section_header,
