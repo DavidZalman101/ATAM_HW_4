@@ -581,7 +581,7 @@ unsigned long find_sym_got_address(FILE *fd, Elf64_Ehdr *file_header_ptr, Elf64_
         }
 
         if (ELF64_R_SYM(rel_entrie.r_info) == symbol_index) {
-            return gotplt_section_header->sh_addr + rel_entrie.r_offset;
+            return gotplt_section_header->sh_offset + rel_entrie.r_offset;
         }
     }
     return 0;

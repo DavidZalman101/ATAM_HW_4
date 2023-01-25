@@ -61,7 +61,7 @@
 extern unsigned long find_symbol(char *symbol_name, char *exe_file_name, int *error_val);
 
 void run_debuger(pid_t child_pid, unsigned long func_load_adr, bool is_dynamic) {
-    int func_entry_counter = is_dynamic ? -1 : 0;
+    int func_entry_counter = is_dynamic ? 0 : 1;
     struct user_regs_struct regs;
     int wait_status = 1;
     bool is_recursive = false;
@@ -111,7 +111,7 @@ void run_debuger(pid_t child_pid, unsigned long func_load_adr, bool is_dynamic) 
         ++func_entry_counter;
 
         if (func_entry_counter > 0 || !is_recursive) {
-            printf("PRF:: run #%d returned with %d", func_entry_counter, (int) regs.rax);
+            printf("PRF:: run #%d returned with %d\n", func_entry_counter, (int) regs.rax);
         }
 
         --regs.rip;
@@ -159,6 +159,8 @@ int prf(char *symbol_name, char *exe_file_name, char **argv) {
     int symbol_index = 0;
     unsigned long sym_load_adr = find_symbol(symbol_name, exe_file_name, &error_val);
 
+    unsigned long *x = (void *) sym_load_adr;
+
     /* Check if the given file is executalbe */
     if (error_val == FILE_NOT_EXECUTABLE)
         return FILE_NOT_EXECUTABLE;
@@ -192,8 +194,8 @@ int main(int arc, char **argv) {
     //char* func_name     = argv[1];
     //char* exe_file_name = argv[2];
 
-    char *func_name = "add_but_not_really";
-    char *exe_file_name = "main.out";
+    char *func_name = "sum";
+    char *exe_file_name = "simple.out";
 
     int res = prf(func_name, exe_file_name, argv);
 
