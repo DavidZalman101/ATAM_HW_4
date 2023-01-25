@@ -1,14 +1,64 @@
 #include "stdio.h"
-#include "hw3_part1.c"
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/reg.h>
+#include <sys/user.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <string.h>
+#include <stdbool.h>
+#include "elf64.h"
+#include <unistd.h>
+
+#ifndef STB_LOCAL
+#define STB_LOCAL 0
+#endif
+
+#ifndef STB_GLOBAL
+#define STB_GLOBAL 1
+#endif
+
+#ifndef STB_LOCAL_AND_GLOBAL
+#define STB_LOCAL_AND_GLOBAL 2
+#endif
+
+#ifndef STB_WEAK
+#define STB_WEAK 2
+#endif
+
+#ifndef SYM_NOT_FOUND
+#define SYM_NOT_FOUND -1
+#endif
+
+#ifndef SYM_FOUND_AS_LOCAL
+#define SYM_FOUND_AS_LOCAL -2
+#endif
+
+#ifndef SYM_FOUND_AS_GLOBAL_AND_DEFINED_HERE
+#define SYM_FOUND_AS_GLOBAL_AND_DEFINED_HERE 1
+#endif
+
+#ifndef FILE_NOT_EXECUTABLE
+#define FILE_NOT_EXECUTABLE -3
+#endif
+
+#ifndef SYM_FOUND_GLOBAL_NOT_DEFINED_HERE
+#define SYM_FOUND_GLOBAL_NOT_DEFINED_HERE -4
+#endif
+
+#ifndef FAIL
+#define FAIL -3
+#endif
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%~~FUNCTIONS~~%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
+
+extern unsigned long find_symbol(char *symbol_name, char *exe_file_name, int *error_val);
 
 void run_debuger(pid_t child_pid, unsigned long func_load_adr, bool is_dynamic) {
     int func_entry_counter = is_dynamic ? -1 : 0;
