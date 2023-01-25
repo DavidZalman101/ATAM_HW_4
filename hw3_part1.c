@@ -95,7 +95,7 @@ bool find_sym_str_tabs_section_headers
 ( FILE* fd, 						 			Elf64_Half Number_of_section_header_enteries, 
   Elf64_Shdr* symtab_section_header, 			Elf64_Shdr* strtab_section_header,
   Elf64_Shdr* shstrtab_section_header,			Elf64_Ehdr* file_header_ptr, Elf64_Shdr* dynstr_section_header,
-  Elf64_Shdr* rela_plt_section_header
+  Elf64_Shdr* rela_plt_section_header,			Elf64_Shdr* gotplt_section_header
 );
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 char* find_string_in_strtab( FILE* fd, Elf64_Shdr* strtab_section_header, Elf64_Sym* symtab_entrie );
@@ -112,7 +112,7 @@ bool find_the_symbol_index(FILE* fd, Elf64_Shdr* dynsym_section_header, Elf64_Sh
 						   char* symbol_name, int* symbol_index);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 unsigned long find_sym_got_address(FILE* fd, Elf64_Ehdr* file_header_ptr, Elf64_Shdr* shstrtab_section_header,
-								   Elf64_Shdr* strtab_section_header, char* symbol_name, Elf64_Shdr* relplt_section_header);
+								   Elf64_Shdr* strtab_section_header, char* symbol_name, Elf64_Shdr* relplt_section_header, Elf64_Shdr* gotplt_section_header);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
@@ -208,7 +208,7 @@ bool find_sym_str_tabs_section_headers
 ( FILE* fd, 						 			Elf64_Half Number_of_section_header_enteries, 
   Elf64_Shdr* symtab_section_header, 			Elf64_Shdr* strtab_section_header,
   Elf64_Shdr* shstrtab_section_header,			Elf64_Ehdr* file_header_ptr, Elf64_Shdr* dynstr_section_header,
-  Elf64_Shdr* rela_plt_section_header
+  Elf64_Shdr* rela_plt_section_header,			Elf64_Shdr* gotplt_section_header
 )
 {
 	if( Number_of_section_header_enteries == 0 )
@@ -226,6 +226,7 @@ bool find_sym_str_tabs_section_headers
 	char strtab[] = ".strtab";
 	char dyntab[] = ".dynstr";
 	char relplt[] = ".rela.plt";
+	char gotplt[] = ".got.plt";
 
 	/*create a section header iterator to iterate over the section table*/
 	Elf64_Shdr section_header;
@@ -280,6 +281,11 @@ bool find_sym_str_tabs_section_headers
 		{
 			// found the dyntab section 
 			*rela_plt_section_header = section_header;
+		}
+		else if( strcmp(section_name_str, gotplt) == 0)
+		{
+			// found the dyntab section 
+			*gotplt_section_header = section_header;
 		}
 
 		free(section_name_str);
@@ -447,13 +453,13 @@ unsigned long find_symbol(char* symbol_name, char* exe_file_name, int* error_val
 	Elf64_Shdr strtab_section_header;
 	Elf64_Shdr dynstr_section_header;
 	Elf64_Shdr relplt_section_header;
-	Elf64_Shdr got_section_header;
+	Elf64_Shdr gotplt_section_header;
 
 	if( find_sym_str_tabs_section_headers
 		( fd, 								file_header_ptr.e_shnum, 
   		  &symtab_section_header,			&strtab_section_header,
 		  &shstrtab_section_header,			&file_header_ptr, &dynstr_section_header,
-		  &relplt_section_header, &got_section_header
+		  &relplt_section_header, 			&gotplt_section_header
 		) == false )
 	{
 		*error_val = FAIL;
@@ -485,7 +491,7 @@ unsigned long find_symbol(char* symbol_name, char* exe_file_name, int* error_val
 		{
 			*error_val = SYM_FOUND_GLOBAL_NOT_DEFINED_HERE;
 			///TODO: find the dnysym section
-			res_ = find_sym_got_address(fd, &file_header_ptr, &shstrtab_section_header, &dynstr_section_header, symbol_name, &relplt_section_header);
+			res_ = find_sym_got_address(fd, &file_header_ptr, &shstrtab_section_header, &dynstr_section_header, symbol_name, &relplt_section_header, &gotplt_section_header);
 		}
 	}
 	else if( result == STB_LOCAL )
@@ -603,7 +609,7 @@ bool find_the_symbol_index(FILE* fd, Elf64_Shdr* dynsym_section_header, Elf64_Sh
 }
 /*_______________________________________________________________________________________________________________*/
 unsigned long find_sym_got_address(FILE* fd, Elf64_Ehdr* file_header_ptr, Elf64_Shdr* shstrtab_section_header,
-								   Elf64_Shdr* dyntab_section_header, char* symbol_name, Elf64_Shdr* relplt_section_header)
+								   Elf64_Shdr* dyntab_section_header, char* symbol_name, Elf64_Shdr* relplt_section_header, Elf64_Shdr* gotplt_section_header)
 {
 
 	Elf64_Shdr dynsym_section_header;
@@ -644,7 +650,7 @@ unsigned long find_sym_got_address(FILE* fd, Elf64_Ehdr* file_header_ptr, Elf64_
 
 		if (ELF64_R_SYM(rel_entrie.r_info) == symbol_index)
 		{
-			return rel_entrie.r_offset;
+			return gotplt_section_header->sh_addr+ rel_entrie.r_offset;
 		}
 	}
 	return 0;
